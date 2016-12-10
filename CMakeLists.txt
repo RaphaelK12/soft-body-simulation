@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(framework-application-template)
+project(soft-body-simulation)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -16,6 +16,10 @@ include_directories(
 
 add_library(${PROJECT_NAME_LIB}
     source/Application.cpp
+    source/LineSetPreview.cpp
+    source/ParticleState.cpp
+    source/SoftBox.cpp
+    source/SoftBoxPreview.cpp
 )
 
 add_executable(${PROJECT_NAME}

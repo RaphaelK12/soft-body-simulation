@@ -27,6 +27,14 @@ void Application::onCreate()
 {
     ImGuiApplication::onCreate();
 
+    _softBox = std::make_shared<SoftBox>();
+    _softBox->distributeUniformly({
+        {-1.0, -1.0, -1.0},
+        {+1.0, +1.0, +1.0}
+    });
+
+    _softBoxPreview = std::make_shared<SoftBoxPreview>();
+
     _phongEffect = std::make_shared<fw::TexturedPhongEffect>();
     _phongEffect->create();
 
@@ -74,19 +82,29 @@ void Application::onRender()
     _phongEffect->setViewMatrix(_camera.getViewMatrix());
     _phongEffect->setModelMatrix({});
     _phongEffect->setTexture(_testTexture);
-    _cube->render();
     _grid->render();
     _phongEffect->end();
 
-    for (const auto& chunk: _frameMarker->getGeometryChunks())
+    auto lightDirection = glm::normalize(glm::vec3{-1.0f, 1.0f, 0.0f});
+
+    for (const auto& chunk: _softBoxPreview->render(*_softBox.get()))
     {
-        _universalPhongEffect->setLightDirection({-1, 1, 0});
-        _universalPhongEffect->setSolidColor(
-            chunk.getMaterial()->getBaseAlbedoColor()
-        );
+        _universalPhongEffect->setLightDirection(lightDirection);
+        _universalPhongEffect->setMaterial(*chunk.getMaterial().get());
 
         _universalPhongEffect->begin();
-        // todo: standarize a way to change uniforms
+        _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
+        _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
+        _universalPhongEffect->setModelMatrix(chunk.getModelMatrix());
+        chunk.getMesh()->render();
+        _universalPhongEffect->end();
+    }
+
+    for (const auto& chunk: _frameMarker->getGeometryChunks())
+    {
+        _universalPhongEffect->setLightDirection(lightDirection);
+        _universalPhongEffect->setMaterial(*chunk.getMaterial().get());
+        _universalPhongEffect->begin();
         _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
         _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
         _universalPhongEffect->setModelMatrix(chunk.getModelMatrix());

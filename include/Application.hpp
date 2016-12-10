@@ -13,6 +13,9 @@
 #include "fw/UniversalPhongEffect.hpp"
 #include "fw/Vertices.hpp"
 
+#include "SoftBox.hpp"
+#include "SoftBoxPreview.hpp"
+
 namespace application
 {
 
@@ -39,6 +42,9 @@ protected:
     void updateProjectionMatrix();
 
 private:
+    std::shared_ptr<SoftBox> _softBox;
+    std::shared_ptr<SoftBoxPreview> _softBoxPreview;
+
     std::shared_ptr<fw::TexturedPhongEffect> _phongEffect;
     std::shared_ptr<fw::UniversalPhongEffect> _universalPhongEffect;
 
