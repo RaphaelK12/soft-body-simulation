@@ -73,6 +73,10 @@ void Application::onUpdate(
     if (ImGui::Begin("Soft Body Simulation"))
     {
         ImGui::Checkbox("Enable physics", &_updatePhysicsEnabled);
+        if (ImGui::Button("Apply random disturbance"))
+        {
+            _softBox->applyRandomDisturbance();
+        }
     }
     ImGui::End();
 

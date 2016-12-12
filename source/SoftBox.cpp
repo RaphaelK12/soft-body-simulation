@@ -1,5 +1,6 @@
 #include "SoftBox.hpp"
 #include <cassert>
+#include <random>
 
 namespace application
 {
@@ -48,6 +49,8 @@ void SoftBox::distributeUniformly(const fw::AABB<glm::dvec3>& box)
             }
         }
     }
+
+    fixCurrentBoxPositionUsingSprings();
 }
 
 glm::ivec3 SoftBox::getParticleMatrixSize() const
@@ -82,6 +85,50 @@ int SoftBox::getParticleIndex(glm::ivec3 coordinate) const
 void SoftBox::update(double dt)
 {
     _particleSystem.update(dt);
+}
+
+void SoftBox::fixCurrentBoxPositionUsingSprings()
+{
+    auto matrixSize = getParticleMatrixSize();
+    for (auto z = 0; z < matrixSize.z; ++z)
+    for (auto y = 0; y < matrixSize.y; ++y)
+    for (auto x = 0; x < matrixSize.x; ++x)
+    {
+        auto& mainParticle = getSoftBoxParticle({x, y, z});
+        auto mainIndex = getParticleIndex({x, y, z});
+
+        for (auto i = -1; i <= 1; ++i)
+        for (auto j = -1; j <= 1; ++j)
+        for (auto k = 0; k <= 1; ++k)
+        {
+            if (i == 0 && j == 0 && k == 0) { continue; }
+            if (x + i < 0 || x + i >= matrixSize.x
+                || y + j < 0 || y + j >= matrixSize.y
+                || z + k < 0 || z + k >= matrixSize.z)
+            {
+                continue;
+            }
+
+            glm::ivec3 coordinate{x + i, y + j, z + k};
+            auto& otherParticle = getSoftBoxParticle(coordinate);
+            auto otherIndex = getParticleIndex(coordinate);
+
+            SpringConstraint constraint;
+            constraint.springLength = glm::length(
+                mainParticle.position - otherParticle.position
+            );
+
+            constraint.a = mainIndex;
+            constraint.b = otherIndex;
+
+            _particleSystem.addConstraint(constraint);
+        }
+    }
+}
+
+void SoftBox::applyRandomDisturbance()
+{
+    _particleSystem.applyRandomDisturbance();
 }
 
 }

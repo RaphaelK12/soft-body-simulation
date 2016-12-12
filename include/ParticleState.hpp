@@ -26,18 +26,20 @@ public:
     glm::dvec3 netForce;
 };
 
-struct SpringContraint
+class ParticleSystem;
+
+struct SpringConstraint
 {
 public:
-    SpringContraint();
+    SpringConstraint();
 
-    glm::dvec3 getForce() const;
+    glm::dvec3 getForce(const ParticleSystem& system) const;
 
     double springLength;
     double springConstant;
     double attenuationFactor;
-    ParticleState* a;
-    ParticleState* b;
+    int a;
+    int b;
 };
 
 class ParticleSystem:
@@ -54,7 +56,9 @@ public:
 
     void clear();
     void addParticle(const ParticleState& particle);
+    void addConstraint(const SpringConstraint& constraint);
     const std::vector<ParticleState>& getParticleStates() const;
+    void applyRandomDisturbance();
 
 protected:
     virtual std::vector<double> evaluateDerivative(
@@ -69,7 +73,7 @@ private:
     std::vector<double> storePhysicsStateDerivative() const;
 
     std::vector<ParticleState> _particleState;
-    std::vector<SpringContraint> _contraints;
+    std::vector<SpringConstraint> _constraints;
 };
 
 }

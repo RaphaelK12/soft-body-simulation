@@ -25,7 +25,11 @@ public:
 
     void update(double dt);
 
+    void applyRandomDisturbance();
+
 private:
+    void fixCurrentBoxPositionUsingSprings();
+
     ParticleSystem _particleSystem;
     glm::ivec3 _particleMatrixSize;
 };

@@ -1,4 +1,5 @@
 #include "ParticleState.hpp"
+#include <random>
 
 namespace application
 {
@@ -18,10 +19,39 @@ ParticleState::ParticleState(
 {
 }
 
-glm::dvec3 SpringContraint::getForce() const
+SpringConstraint::SpringConstraint():
+    springLength{},
+    springConstant{1.0},
+    attenuationFactor{0.2},
+    a{},
+    b{}
 {
-    //auto relation = b->position - a->position;
-    return {0, 0, 0};
+}
+
+glm::dvec3 SpringConstraint::getForce(const ParticleSystem& system) const
+{
+    auto A = system.getParticleStates()[a];
+    auto B = system.getParticleStates()[b];
+
+    auto relation = B.position - A.position;
+    auto relationDirection = glm::normalize(relation);
+
+    auto relativeVelocityA = A.invMass * glm::dot(
+        relationDirection,
+        A.momentum
+    );
+
+    auto relativeVelocityB = B.invMass * glm::dot(
+        relationDirection,
+        B.momentum
+    );
+
+    auto springExtensionVelocity = relativeVelocityB - relativeVelocityA;
+    auto springCurrentLength = glm::length(relation);
+    auto springForce = -springExtensionVelocity * attenuationFactor
+        - (springCurrentLength - springLength) * springConstant;
+
+    return -relationDirection * springForce;
 }
 
 ParticleSystem::ParticleSystem()
@@ -91,6 +121,11 @@ void ParticleSystem::addParticle(const ParticleState& particle)
     _particleState.push_back(particle);
 }
 
+void ParticleSystem::addConstraint(const SpringConstraint& constraint)
+{
+    _constraints.push_back(constraint);
+}
+
 const std::vector<ParticleState>& ParticleSystem::getParticleStates() const
 {
     return _particleState;
@@ -112,17 +147,17 @@ void ParticleSystem::clearForces()
 {
     for (auto& particle: _particleState)
     {
-        particle.netForce = {0, 0, 1};
+        particle.netForce = {0, 0, 0};
     }
 }
 
 void ParticleSystem::calculateForces()
 {
-    for (const auto& constraint: _contraints)
+    for (const auto& constraint: _constraints)
     {
-        auto force = constraint.getForce();
-        constraint.a->netForce += force;
-        constraint.b->netForce -= force;
+        auto force = constraint.getForce(*this);
+        _particleState[constraint.a].netForce += force;
+        _particleState[constraint.b].netForce -= force;
     }
 }
 
@@ -150,6 +185,19 @@ std::vector<double> ParticleSystem::storePhysicsStateDerivative() const
     }
 
     return output;
+}
+
+void ParticleSystem::applyRandomDisturbance()
+{
+    std::random_device randomDevice;
+    std::default_random_engine randomEngine(randomDevice());
+    std::uniform_int_distribution<double> uniformDist(-1, 1);
+    for (auto& particle: _particleState)
+    {
+        particle.momentum.x = uniformDist(randomEngine);
+        particle.momentum.y = uniformDist(randomEngine);
+        particle.momentum.z = uniformDist(randomEngine);
+    }
 }
 
 }
