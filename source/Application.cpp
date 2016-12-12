@@ -14,6 +14,7 @@ namespace application
 {
 
 Application::Application():
+    _updatePhysicsEnabled{false},
     _enableCameraRotations{false},
     _cameraRotationSensitivity{0.2, 0.2}
 {
@@ -68,7 +69,17 @@ void Application::onUpdate(
 )
 {
     ImGuiApplication::onUpdate(deltaTime);
-    ImGui::ShowTestWindow();
+
+    if (ImGui::Begin("Soft Body Simulation"))
+    {
+        ImGui::Checkbox("Enable physics", &_updatePhysicsEnabled);
+    }
+    ImGui::End();
+
+    if (_updatePhysicsEnabled)
+    {
+        _softBox->update(std::chrono::duration<double>(deltaTime).count());
+    }
 }
 
 void Application::onRender()

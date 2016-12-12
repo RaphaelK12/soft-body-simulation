@@ -36,7 +36,7 @@ std::vector<fw::GeometryChunk> SoftBoxPreview::render(
     {
         glm::mat4 translationMatrix = glm::translate(
             glm::mat4{},
-            particle.position
+            glm::vec3{particle.position}
         );
 
         auto modelMatrix = translationMatrix * softBoxParticleMarkerScaling;

@@ -42,6 +42,7 @@ protected:
     void updateProjectionMatrix();
 
 private:
+    bool _updatePhysicsEnabled;
     std::shared_ptr<SoftBox> _softBox;
     std::shared_ptr<SoftBoxPreview> _softBoxPreview;
 

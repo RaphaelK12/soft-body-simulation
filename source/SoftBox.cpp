@@ -15,7 +15,7 @@ SoftBox::~SoftBox()
 
 void SoftBox::distributeUniformly(const fw::AABB<glm::dvec3>& box)
 {
-    _particles.clear();
+    _particleSystem.clear();
 
     for (auto z = 0; z < _particleMatrixSize.z; ++z)
     {
@@ -41,7 +41,7 @@ void SoftBox::distributeUniformly(const fw::AABB<glm::dvec3>& box)
                     static_cast<double>(x) / (_particleMatrixSize.x - 1)
                 );
 
-                _particles.push_back({
+                _particleSystem.addParticle({
                     {xCoord, yCoord, zCoord},
                     {0.0, 0.0, 0.0}
                 });
@@ -55,19 +55,14 @@ glm::ivec3 SoftBox::getParticleMatrixSize() const
     return _particleMatrixSize;
 }
 
-void SoftBox::setParticleMatrixSize(glm::ivec3 particleMatrixSize)
-{
-    _particleMatrixSize = particleMatrixSize;
-}
-
 const std::vector<ParticleState> SoftBox::getSoftBoxParticles() const
 {
-    return _particles;
+    return _particleSystem.getParticleStates();
 }
 
 const ParticleState& SoftBox::getSoftBoxParticle(glm::ivec3 index) const
 {
-    return _particles[getParticleIndex(index)];
+    return getSoftBoxParticles()[getParticleIndex(index)];
 }
 
 int SoftBox::getParticleIndex(glm::ivec3 coordinate) const
@@ -82,6 +77,11 @@ int SoftBox::getParticleIndex(glm::ivec3 coordinate) const
         + coordinate.x;
 
     return particleIndex;
+}
+
+void SoftBox::update(double dt)
+{
+    _particleSystem.update(dt);
 }
 
 }

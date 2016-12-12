@@ -17,14 +17,16 @@ public:
     void distributeUniformly(const fw::AABB<glm::dvec3>& box);
 
     glm::ivec3 getParticleMatrixSize() const;
-    void setParticleMatrixSize(glm::ivec3 particleMatrixSize);
+    //void setParticleMatrixSize(glm::ivec3 particleMatrixSize);
 
     const std::vector<ParticleState> getSoftBoxParticles() const;
     const ParticleState& getSoftBoxParticle(glm::ivec3 index) const;
     int getParticleIndex(glm::ivec3 coordinate) const;
 
+    void update(double dt);
+
 private:
-    std::vector<ParticleState> _particles;
+    ParticleSystem _particleSystem;
     glm::ivec3 _particleMatrixSize;
 };
 
