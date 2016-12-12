@@ -16,6 +16,7 @@ include_directories(
 
 add_library(${PROJECT_NAME_LIB}
     source/Application.cpp
+    source/ControlFrame.cpp
     source/LineSetPreview.cpp
     source/ParticleState.cpp
     source/SoftBox.cpp

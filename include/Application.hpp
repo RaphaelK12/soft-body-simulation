@@ -51,6 +51,9 @@ private:
 
     std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _cube;
 
+    std::shared_ptr<fw::Material> _cubeOutlineMaterial;
+    std::shared_ptr<fw::Mesh<fw::VertexColor>> _cubeOutline;
+
     std::shared_ptr<fw::Grid> _grid;
     std::shared_ptr<fw::FrameMarker> _frameMarker;
 

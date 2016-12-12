@@ -57,7 +57,12 @@ public:
     void clear();
     void addParticle(const ParticleState& particle);
     void addConstraint(const SpringConstraint& constraint);
+
     const std::vector<ParticleState>& getParticleStates() const;
+
+    void setStaticParticles(const std::vector<ParticleState>& particles);
+    const std::vector<ParticleState>& getStaticParticles() const;
+
     void applyRandomDisturbance();
 
 protected:
@@ -72,6 +77,7 @@ private:
     void updateParticles();
     std::vector<double> storePhysicsStateDerivative() const;
 
+    std::vector<ParticleState> _staticParticles;
     std::vector<ParticleState> _particleState;
     std::vector<SpringConstraint> _constraints;
 };

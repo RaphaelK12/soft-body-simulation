@@ -28,6 +28,10 @@ void Application::onCreate()
 {
     ImGuiApplication::onCreate();
 
+    _cubeOutline = fw::createBoxOutline({1.0f, 1.0f, 1.0f});
+    _cubeOutlineMaterial = std::make_shared<fw::Material>();
+    _cubeOutlineMaterial->setEmissionColor({0.0f, 1.0f, 0.0f});
+
     _softBox = std::make_shared<SoftBox>();
     _softBox->distributeUniformly({
         {-1.0, -1.0, -1.0},
@@ -114,6 +118,16 @@ void Application::onRender()
         chunk.getMesh()->render();
         _universalPhongEffect->end();
     }
+
+    _universalPhongEffect->setMaterial(*_cubeOutlineMaterial.get());
+    _universalPhongEffect->begin();
+    _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
+    _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
+    _universalPhongEffect->setModelMatrix(
+        _softBox->getControlFrame().getModelMatrix()
+    );
+    _cubeOutline->render();
+    _universalPhongEffect->end();
 
     for (const auto& chunk: _frameMarker->getGeometryChunks())
     {

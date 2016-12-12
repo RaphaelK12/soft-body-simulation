@@ -51,6 +51,7 @@ void SoftBox::distributeUniformly(const fw::AABB<glm::dvec3>& box)
     }
 
     fixCurrentBoxPositionUsingSprings();
+    connectBoxToFrame();
 }
 
 glm::ivec3 SoftBox::getParticleMatrixSize() const
@@ -84,6 +85,29 @@ int SoftBox::getParticleIndex(glm::ivec3 coordinate) const
 
 void SoftBox::update(double dt)
 {
+    _controlFrame.updateUserInterface();
+
+    std::vector<ParticleState> staticParticles;
+    auto frameTransform = _controlFrame.getModelMatrix();
+    for (auto zsign = 0; zsign <= 1; ++zsign)
+    {
+        for (auto ysign = 0; ysign <= 1; ++ysign)
+        {
+            for (auto xsign = 0; xsign <= 1; ++xsign)
+            {
+                glm::vec3 local{
+                    xsign - 0.5f,
+                    ysign - 0.5f,
+                    zsign - 0.5f
+                };
+
+                glm::vec3 fixedPoint{frameTransform * glm::vec4{local, 1.0}};
+                staticParticles.push_back({fixedPoint, {0,0,0}});
+            }
+        }
+    }
+
+    _particleSystem.setStaticParticles(staticParticles);
     _particleSystem.update(dt);
 }
 
@@ -129,6 +153,45 @@ void SoftBox::fixCurrentBoxPositionUsingSprings()
 void SoftBox::applyRandomDisturbance()
 {
     _particleSystem.applyRandomDisturbance();
+}
+
+void SoftBox::connectBoxToFrame()
+{
+    SpringConstraint frameSpring;
+    frameSpring.springConstant = 100.0;
+    frameSpring.attenuationFactor = 0.8f;
+
+    auto frameTransform = _controlFrame.getModelMatrix();
+
+    for (auto zsign = 0; zsign <= 1; ++zsign)
+    {
+        for (auto ysign = 0; ysign <= 1; ++ysign)
+        {
+            for (auto xsign = 0; xsign <= 1; ++xsign)
+            {
+                glm::ivec3 coord{
+                    xsign * (_particleMatrixSize.x - 1),
+                    ysign * (_particleMatrixSize.y - 1),
+                    zsign * (_particleMatrixSize.z - 1)
+                };
+
+                glm::vec3 local{
+                    xsign - 0.5f,
+                    ysign - 0.5f,
+                    zsign - 0.5f
+                };
+
+                glm::vec3 fixedPoint{frameTransform * glm::vec4{local, 1.0}};
+                glm::vec3 particle = getSoftBoxParticle(coord).position;
+
+                frameSpring.a = -(4*zsign + 2*ysign + xsign) - 1;
+                frameSpring.b = getParticleIndex(coord);
+                frameSpring.springLength = glm::length(fixedPoint - particle);
+
+                _particleSystem.addConstraint(frameSpring);
+            }
+        }
+    }
 }
 
 }

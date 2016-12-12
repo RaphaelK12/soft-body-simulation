@@ -1,5 +1,6 @@
 #include "ParticleState.hpp"
 #include <random>
+#include "easylogging++.h"
 
 namespace application
 {
@@ -30,8 +31,26 @@ SpringConstraint::SpringConstraint():
 
 glm::dvec3 SpringConstraint::getForce(const ParticleSystem& system) const
 {
-    auto A = system.getParticleStates()[a];
-    auto B = system.getParticleStates()[b];
+    ParticleState A;
+    ParticleState B;
+
+    if (a >= 0)
+    {
+        A = system.getParticleStates()[a];
+    }
+    else
+    {
+        A = system.getStaticParticles()[-a-1];
+    }
+
+    if (b >= 0)
+    {
+        B = system.getParticleStates()[b];
+    }
+    else
+    {
+        B = system.getStaticParticles()[-b-1];
+    }
 
     auto relation = B.position - A.position;
     auto relationDirection = glm::normalize(relation);
@@ -131,6 +150,18 @@ const std::vector<ParticleState>& ParticleSystem::getParticleStates() const
     return _particleState;
 }
 
+void ParticleSystem::setStaticParticles(
+    const std::vector<ParticleState>& particles
+)
+{
+    _staticParticles = particles;
+}
+
+const std::vector<ParticleState>& ParticleSystem::getStaticParticles() const
+{
+    return _staticParticles;
+}
+
 std::vector<double> ParticleSystem::evaluateDerivative(
     const std::vector<double>& state,
     const double& time
@@ -156,8 +187,16 @@ void ParticleSystem::calculateForces()
     for (const auto& constraint: _constraints)
     {
         auto force = constraint.getForce(*this);
-        _particleState[constraint.a].netForce += force;
-        _particleState[constraint.b].netForce -= force;
+
+        if (constraint.a >= 0)
+        {
+            _particleState[constraint.a].netForce += force;
+        }
+
+        if (constraint.b >= 0)
+        {
+            _particleState[constraint.b].netForce -= force;
+        }
     }
 }
 
