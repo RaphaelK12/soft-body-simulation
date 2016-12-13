@@ -9,7 +9,9 @@ namespace application
 {
 
 ControlFrame::ControlFrame():
-    _frameSize{2.0f}
+    _frameSize{2.0f},
+    _frameSpringConstant{10.0},
+    _frameSpringAttenuation{0.0f}
 {
 }
 
@@ -19,6 +21,20 @@ void ControlFrame::updateUserInterface()
     {
         ImGui::DragFloat3("Position", glm::value_ptr(_framePosition), 0.1f);
         ImGui::DragFloat3("Rotation", glm::value_ptr(_frameOrientation), 0.01f);
+
+        ImGui::SliderFloat(
+            "Frame spring constant",
+            &_frameSpringConstant,
+            0.1f,
+            100.0f
+        );
+
+        ImGui::SliderFloat(
+            "Frame spring attenuation",
+            &_frameSpringAttenuation,
+            0.0f,
+            20.0f
+        );
     }
 }
 

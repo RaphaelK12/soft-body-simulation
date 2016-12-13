@@ -110,6 +110,11 @@ void SoftBox::updateUserInterface()
         _springsConstant,
         _springsAttenuation
     );
+
+    _particleSystem.updateFrameConstraints(
+        _controlFrame.getSpringConstant(),
+        _controlFrame.getSpringAttenuation()
+    );
 }
 
 void SoftBox::update(double dt)
@@ -185,8 +190,8 @@ void SoftBox::applyRandomDisturbance()
 void SoftBox::connectBoxToFrame()
 {
     SpringConstraint frameSpring;
-    frameSpring.springConstant = 100.0;
-    frameSpring.attenuationFactor = 0.8f;
+    frameSpring.springConstant = 2.0;
+    frameSpring.attenuationFactor = 1.0f;
 
     auto frameTransform = _controlFrame.getModelMatrix();
 

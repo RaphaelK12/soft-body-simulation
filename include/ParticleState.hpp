@@ -72,11 +72,20 @@ public:
         double springAttenuation
     );
 
+    void updateFrameConstraints(
+        double springConstant,
+        double springAttenuation
+    );
+
 protected:
     virtual std::vector<double> evaluateDerivative(
         const std::vector<double>& state,
         const double& time
     );
+
+    double singleStep(double maxDt);
+    bool checkInterpenetration();
+    void applyImpulsesToCollidingContacts();
 
 private:
     void clearForces();
@@ -87,6 +96,8 @@ private:
     std::vector<ParticleState> _staticParticles;
     std::vector<ParticleState> _particleState;
     std::vector<SpringConstraint> _constraints;
+
+    glm::dvec3 _roomSize;
 };
 
 }

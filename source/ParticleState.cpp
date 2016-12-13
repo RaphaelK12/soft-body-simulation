@@ -53,8 +53,9 @@ glm::dvec3 SpringConstraint::getForce(const ParticleSystem& system) const
     }
 
     auto relation = B.position - A.position;
-    if (glm::length(relation) <= 10e-6) { return {0, 0, 0}; }
-    auto relationDirection = glm::normalize(relation);
+    auto relationDirection = glm::length(relation) > 10e-4
+        ? glm::normalize(relation)
+        : glm::dvec3{1.0, 0.0, 0.0};
 
     auto relativeVelocityA = A.invMass * glm::dot(
         relationDirection,
@@ -74,7 +75,8 @@ glm::dvec3 SpringConstraint::getForce(const ParticleSystem& system) const
     return -relationDirection * springForce;
 }
 
-ParticleSystem::ParticleSystem()
+ParticleSystem::ParticleSystem():
+    _roomSize{10.0, 5.0, 10.0}
 {
 }
 
@@ -120,15 +122,53 @@ void ParticleSystem::applyPhysicsState(const std::vector<double>& state)
 void ParticleSystem::update(double dt)
 {
     auto physicsStep = std::min(dt, 0.01);
+
+    auto availableTime = physicsStep;
+    while (availableTime > 10e-6)
+    {
+        availableTime -= singleStep(availableTime);
+    }
+}
+
+double ParticleSystem::singleStep(double maxDt)
+{
     auto physicsState = storePhysicsState();
-
-    auto newPhysicsState = step(
-        physicsState,
-        0.0,
-        physicsStep
-    );
-
+    auto newPhysicsState = step(physicsState, 0.0, maxDt);
     applyPhysicsState(newPhysicsState);
+
+    auto interpenetration = checkInterpenetration();
+    if (interpenetration)
+    {
+        const double cTimeTolerance = 10e-3;
+        auto stepLowerLimit = 0.0;
+        auto stepUpperLimit = maxDt;
+        std::vector<double> lastPhysicsState;
+
+        while ((stepUpperLimit - stepLowerLimit) > cTimeTolerance)
+        {
+            auto midpointStep = (stepUpperLimit + stepLowerLimit) / 2.0;
+            lastPhysicsState = step(physicsState, 0.0, midpointStep);
+            applyPhysicsState(lastPhysicsState);
+            if (checkInterpenetration())
+            {
+                stepUpperLimit = midpointStep;
+            }
+            else
+            {
+                stepLowerLimit = midpointStep;
+            }
+        }
+
+        auto chosenTouchTime = (stepUpperLimit + stepLowerLimit) / 2.0;
+        auto touchPhysicsState = step(physicsState, 0.0, chosenTouchTime);
+
+        applyPhysicsState(touchPhysicsState);
+        applyImpulsesToCollidingContacts();
+
+        return chosenTouchTime;
+    }
+
+    return maxDt;
 }
 
 void ParticleSystem::clear()
@@ -262,6 +302,96 @@ void ParticleSystem::updateSoftBoxConstraints(
 
         constraint.springConstant = springConstant;
         constraint.attenuationFactor = springAttenuation;
+    }
+}
+
+void ParticleSystem::updateFrameConstraints(
+    double springConstant,
+    double springAttenuation
+)
+{
+    for (auto& constraint: _constraints)
+    {
+        if (constraint.a >= 0 && constraint.b >= 0)
+        {
+            continue;
+        }
+
+        constraint.springConstant = springConstant;
+        constraint.attenuationFactor = springAttenuation;
+    }
+}
+
+bool ParticleSystem::checkInterpenetration()
+{
+    auto minPosition = -0.5 * _roomSize;
+    auto maxPosition = +0.5 * _roomSize;
+    for (const auto& particle: _particleState)
+    {
+        if (glm::any(glm::lessThan(particle.position, minPosition)))
+        {
+            return true;
+        }
+
+        if (glm::any(glm::greaterThan(particle.position, maxPosition)))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void ParticleSystem::applyImpulsesToCollidingContacts()
+{
+    auto epsilon = 10e-5;
+    for (auto& particle: _particleState)
+    {
+        if (particle.position.x < -_roomSize.x / 2 + epsilon
+            && particle.momentum.x < -epsilon)
+        {
+            particle.momentum = glm::reflect(
+                particle.momentum,
+                {1.0, 0.0, 0.0}
+            );
+        } else if (particle.position.x > _roomSize.x / 2 - epsilon
+            && particle.momentum.x > epsilon)
+        {
+            particle.momentum = glm::reflect(
+                particle.momentum,
+                {-1.0, 0.0, 0.0}
+            );
+        }
+        if (particle.position.y < -_roomSize.y / 2 + epsilon
+            && particle.momentum.y < -epsilon)
+        {
+            particle.momentum = glm::reflect(
+                particle.momentum,
+                {0.0, 1.0, 0.0}
+            );
+        } else if (particle.position.y > _roomSize.y / 2 - epsilon
+            && particle.momentum.y > epsilon)
+        {
+            particle.momentum = glm::reflect(
+                particle.momentum,
+                {0.0, -1.0, 0.0}
+            );
+        }
+        if (particle.position.z < -_roomSize.z / 2 + epsilon
+            && particle.momentum.z < -epsilon)
+        {
+            particle.momentum = glm::reflect(
+                particle.momentum,
+                {0.0, 0.0, 1.0}
+            );
+        } else if (particle.position.z > _roomSize.z / 2 - epsilon
+            && particle.momentum.z > epsilon)
+        {
+            particle.momentum = glm::reflect(
+                particle.momentum,
+                {0.0, 0.0, -1.0}
+            );
+        }
     }
 }
 
