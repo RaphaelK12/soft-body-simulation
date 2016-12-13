@@ -16,6 +16,9 @@
 #include "SoftBox.hpp"
 #include "SoftBoxPreview.hpp"
 
+#include "BezierPatch.hpp"
+#include "BezierPatchEffect.hpp"
+
 namespace application
 {
 
@@ -41,6 +44,10 @@ protected:
 
     void updateProjectionMatrix();
 
+    void drawSoftBoxSide(
+        std::function<glm::ivec3(int,int)> coordTransformation
+    );
+
 private:
     bool _updatePhysicsEnabled;
     std::shared_ptr<SoftBox> _softBox;
@@ -55,6 +62,9 @@ private:
     std::shared_ptr<fw::Mesh<fw::VertexColor>> _cubeOutline;
 
     std::shared_ptr<fw::Grid> _grid;
+
+    std::shared_ptr<BezierPatchEffect> _bezierEffect;
+    std::shared_ptr<BezierPatch> _bezierPatch;
 
     fw::OrbitingCamera _camera;
     glm::mat4 _projectionMatrix;

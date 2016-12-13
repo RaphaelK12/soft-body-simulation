@@ -8,9 +8,16 @@ set(DEPENDENCIES_DIR dependencies/)
 
 add_subdirectory(${DEPENDENCIES_DIR}/framework)
 
+set(APPLICATION_RESOURCES_DIR ${PROJECT_SOURCE_DIR}/assets CACHE PATH "")
+
+configure_file(
+    ${PROJECT_SOURCE_DIR}/configuration/Config.in.hpp
+    ${PROJECT_BINARY_DIR}/configuration/Config.hpp
+)
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_BINARY_DIR}
+    ${PROJECT_BINARY_DIR}/configuration
     ${FRAMEWORK_INCLUDE_DIRS}
 )
 
@@ -21,6 +28,8 @@ add_library(${PROJECT_NAME_LIB}
     source/ParticleState.cpp
     source/SoftBox.cpp
     source/SoftBoxPreview.cpp
+    source/BezierPatch.cpp
+    source/BezierPatchEffect.cpp
 )
 
 add_executable(${PROJECT_NAME}

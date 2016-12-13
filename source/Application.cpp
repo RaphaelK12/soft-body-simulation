@@ -59,6 +59,11 @@ void Application::onCreate()
     _camera.setDist(3.0f);
 
     updateProjectionMatrix();
+
+    _bezierPatch = std::make_shared<BezierPatch>();
+    _bezierPatch->createFlatGrid(3.0f, 3.0f);
+    _bezierEffect = std::make_shared<BezierPatchEffect>();
+    _bezierEffect->initialize("bezierPatch");
 }
 
 void Application::onDestroy()
@@ -127,6 +132,13 @@ void Application::onRender()
     _cubeOutline->render();
     _universalPhongEffect->end();
 
+    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 0}; });
+    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 3}; });
+    drawSoftBoxSide([](int i, int j) { return glm::ivec3{0, i, j}; });
+    drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, i, j}; });
+    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 0, j}; });
+    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 3, j}; });
+
     ImGuiApplication::onRender();
 }
 
@@ -185,6 +197,31 @@ void Application::updateProjectionMatrix()
     auto windowSize = getWindowSize();
     auto aspectRatio = static_cast<float>(windowSize.x) / windowSize.y;
     _projectionMatrix = glm::perspective(45.0f, aspectRatio, 0.5f, 100.0f);
+}
+
+void Application::drawSoftBoxSide(
+    std::function<glm::ivec3(int,int)> coordTransformation
+)
+{
+    std::vector<glm::vec3> controlPoints;
+    for (auto i = 0; i < 4; ++i)
+    {
+        for (auto j = 0; j < 4; ++j)
+        {
+            glm::ivec3 coord = coordTransformation(i, j);
+            controlPoints.push_back(
+                _softBox->getSoftBoxParticle(coord).position
+            );
+        }
+    }
+
+    _bezierPatch->setControlPoints(controlPoints);
+    _bezierEffect->begin();
+    _bezierEffect->setModelMatrix({});
+    _bezierEffect->setViewMatrix(_camera.getViewMatrix());
+    _bezierEffect->setProjectionMatrix(_projectionMatrix);
+    _bezierPatch->drawPatch();
+    _bezierEffect->end();
 }
 
 }
