@@ -9,7 +9,7 @@ namespace application
 {
 
 ControlFrame::ControlFrame():
-    _frameSize{3.0f}
+    _frameSize{2.0f}
 {
 }
 

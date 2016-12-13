@@ -64,6 +64,10 @@ std::vector<fw::GeometryChunk> SoftBoxPreview::render(
         for (auto k = 0; k <= 1; ++k)
         {
             if (i == 0 && j == 0 && k == 0) { continue; }
+            if ((i != 0 ? 1 : 0) + (j != 0 ? 1 : 0) + (k != 0 ? 1 : 0) != 1)
+            {
+                continue;
+            }
             if (x + i < 0 || x + i >= matrixSize.x
                 || y + j < 0 || y + j >= matrixSize.y
                 || z + k < 0 || z + k >= matrixSize.z)

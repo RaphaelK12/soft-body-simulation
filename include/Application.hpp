@@ -55,7 +55,6 @@ private:
     std::shared_ptr<fw::Mesh<fw::VertexColor>> _cubeOutline;
 
     std::shared_ptr<fw::Grid> _grid;
-    std::shared_ptr<fw::FrameMarker> _frameMarker;
 
     fw::OrbitingCamera _camera;
     glm::mat4 _projectionMatrix;

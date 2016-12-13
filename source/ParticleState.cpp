@@ -53,6 +53,7 @@ glm::dvec3 SpringConstraint::getForce(const ParticleSystem& system) const
     }
 
     auto relation = B.position - A.position;
+    if (glm::length(relation) <= 10e-6) { return {0, 0, 0}; }
     auto relationDirection = glm::normalize(relation);
 
     auto relativeVelocityA = A.invMass * glm::dot(

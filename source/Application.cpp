@@ -51,8 +51,6 @@ void Application::onCreate()
         glm::vec2{0.5f, 0.5f}
     );
 
-    _frameMarker = std::make_shared<fw::FrameMarker>();
-
     _testTexture = fw::loadTextureFromFile(
         fw::getFrameworkResourcePath("textures/checker-base.png")
     );
@@ -128,18 +126,6 @@ void Application::onRender()
     );
     _cubeOutline->render();
     _universalPhongEffect->end();
-
-    for (const auto& chunk: _frameMarker->getGeometryChunks())
-    {
-        _universalPhongEffect->setLightDirection(lightDirection);
-        _universalPhongEffect->setMaterial(*chunk.getMaterial().get());
-        _universalPhongEffect->begin();
-        _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
-        _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
-        _universalPhongEffect->setModelMatrix(chunk.getModelMatrix());
-        chunk.getMesh()->render();
-        _universalPhongEffect->end();
-    }
 
     ImGuiApplication::onRender();
 }

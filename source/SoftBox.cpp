@@ -44,7 +44,8 @@ void SoftBox::distributeUniformly(const fw::AABB<glm::dvec3>& box)
 
                 _particleSystem.addParticle({
                     {xCoord, yCoord, zCoord},
-                    {0.0, 0.0, 0.0}
+                    {0.0, 0.0, 0.0},
+                    1.0 / 0.1
                 });
             }
         }
@@ -186,7 +187,7 @@ void SoftBox::connectBoxToFrame()
 
                 frameSpring.a = -(4*zsign + 2*ysign + xsign) - 1;
                 frameSpring.b = getParticleIndex(coord);
-                frameSpring.springLength = glm::length(fixedPoint - particle);
+                frameSpring.springLength = 0.0f;
 
                 _particleSystem.addConstraint(frameSpring);
             }
