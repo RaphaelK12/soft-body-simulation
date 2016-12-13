@@ -17,8 +17,8 @@ void ControlFrame::updateUserInterface()
 {
     if (ImGui::CollapsingHeader("Control frame"))
     {
-        ImGui::DragFloat3("Position", glm::value_ptr(_framePosition));
-        ImGui::DragFloat3("Rotation", glm::value_ptr(_frameOrientation));
+        ImGui::DragFloat3("Position", glm::value_ptr(_framePosition), 0.1f);
+        ImGui::DragFloat3("Rotation", glm::value_ptr(_frameOrientation), 0.01f);
     }
 }
 
