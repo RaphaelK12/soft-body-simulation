@@ -8,8 +8,8 @@ namespace application
 
 SoftBox::SoftBox():
     _particleMatrixSize{4, 4, 4},
-    _particleMass{1.0f},
-    _springsConstant{1.0f},
+    _particleMass{0.1f},
+    _springsConstant{5.0f},
     _springsAttenuation{1.0f}
 {
 }
