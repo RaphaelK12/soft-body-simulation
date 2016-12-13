@@ -48,10 +48,16 @@ protected:
         std::function<glm::ivec3(int,int)> coordTransformation
     );
 
+    void restartSimulation();
+
 private:
     bool _updatePhysicsEnabled;
     std::shared_ptr<SoftBox> _softBox;
     std::shared_ptr<SoftBoxPreview> _softBoxPreview;
+
+    bool _enableGridPreview;
+    bool _enableConstraintsPreview;
+    bool _enableSoftBoxRendering;
 
     std::shared_ptr<fw::TexturedPhongEffect> _phongEffect;
     std::shared_ptr<fw::UniversalPhongEffect> _universalPhongEffect;

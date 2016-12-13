@@ -15,6 +15,9 @@ namespace application
 
 Application::Application():
     _updatePhysicsEnabled{false},
+    _enableGridPreview{true},
+    _enableConstraintsPreview{false},
+    _enableSoftBoxRendering{true},
     _enableCameraRotations{false},
     _cameraRotationSensitivity{0.2, 0.2}
 {
@@ -32,11 +35,7 @@ void Application::onCreate()
     _cubeOutlineMaterial = std::make_shared<fw::Material>();
     _cubeOutlineMaterial->setEmissionColor({0.0f, 1.0f, 0.0f});
 
-    _softBox = std::make_shared<SoftBox>();
-    _softBox->distributeUniformly({
-        {-1.0, -1.0, -1.0},
-        {+1.0, +1.0, +1.0}
-    });
+    restartSimulation();
 
     _softBoxPreview = std::make_shared<SoftBoxPreview>();
 
@@ -80,9 +79,24 @@ void Application::onUpdate(
     if (ImGui::Begin("Soft Body Simulation"))
     {
         ImGui::Checkbox("Enable physics", &_updatePhysicsEnabled);
+
+        if (ImGui::Button("Restart"))
+        {
+            restartSimulation();
+        }
+
         if (ImGui::Button("Apply random disturbance"))
         {
             _softBox->applyRandomDisturbance();
+        }
+
+        _softBox->updateUserInterface();
+
+        if (ImGui::CollapsingHeader("Visual"))
+        {
+            ImGui::Checkbox("Grid preview", &_enableGridPreview);
+            ImGui::Checkbox("Constraints preview", &_enableConstraintsPreview);
+            ImGui::Checkbox("Soft-box preview", &_enableSoftBoxRendering);
         }
     }
     ImGui::End();
@@ -99,27 +113,33 @@ void Application::onRender()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
-    _phongEffect->begin();
-    _phongEffect->setProjectionMatrix(_projectionMatrix);
-    _phongEffect->setViewMatrix(_camera.getViewMatrix());
-    _phongEffect->setModelMatrix({});
-    _phongEffect->setTexture(_testTexture);
-    _grid->render();
-    _phongEffect->end();
+    if (_enableGridPreview)
+    {
+        _phongEffect->begin();
+        _phongEffect->setProjectionMatrix(_projectionMatrix);
+        _phongEffect->setViewMatrix(_camera.getViewMatrix());
+        _phongEffect->setModelMatrix({});
+        _phongEffect->setTexture(_testTexture);
+        _grid->render();
+        _phongEffect->end();
+    }
 
     auto lightDirection = glm::normalize(glm::vec3{-1.0f, 1.0f, 0.0f});
 
-    for (const auto& chunk: _softBoxPreview->render(*_softBox.get()))
+    if (_enableConstraintsPreview)
     {
-        _universalPhongEffect->setLightDirection(lightDirection);
-        _universalPhongEffect->setMaterial(*chunk.getMaterial().get());
+        for (const auto& chunk: _softBoxPreview->render(*_softBox.get()))
+        {
+            _universalPhongEffect->setLightDirection(lightDirection);
+            _universalPhongEffect->setMaterial(*chunk.getMaterial().get());
 
-        _universalPhongEffect->begin();
-        _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
-        _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
-        _universalPhongEffect->setModelMatrix(chunk.getModelMatrix());
-        chunk.getMesh()->render();
-        _universalPhongEffect->end();
+            _universalPhongEffect->begin();
+            _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
+            _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
+            _universalPhongEffect->setModelMatrix(chunk.getModelMatrix());
+            chunk.getMesh()->render();
+            _universalPhongEffect->end();
+        }
     }
 
     _universalPhongEffect->setMaterial(*_cubeOutlineMaterial.get());
@@ -132,12 +152,15 @@ void Application::onRender()
     _cubeOutline->render();
     _universalPhongEffect->end();
 
-    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 0}; });
-    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 3}; });
-    drawSoftBoxSide([](int i, int j) { return glm::ivec3{0, i, j}; });
-    drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, i, j}; });
-    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 0, j}; });
-    drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 3, j}; });
+    if (_enableSoftBoxRendering)
+    {
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 0}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 3}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{0, i, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, i, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 0, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 3, j}; });
+    }
 
     ImGuiApplication::onRender();
 }
@@ -222,6 +245,15 @@ void Application::drawSoftBoxSide(
     _bezierEffect->setProjectionMatrix(_projectionMatrix);
     _bezierPatch->drawPatch();
     _bezierEffect->end();
+}
+
+void Application::restartSimulation()
+{
+    _softBox = std::make_shared<SoftBox>();
+    _softBox->distributeUniformly({
+        {-1.0, -1.0, -1.0},
+        {+1.0, +1.0, +1.0}
+    });
 }
 
 }

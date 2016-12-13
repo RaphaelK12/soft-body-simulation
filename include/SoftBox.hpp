@@ -23,7 +23,9 @@ public:
     const ParticleState& getSoftBoxParticle(glm::ivec3 index) const;
     int getParticleIndex(glm::ivec3 coordinate) const;
 
+    void updateUserInterface();
     void update(double dt);
+
     const ControlFrame& getControlFrame() { return _controlFrame; }
 
     void applyRandomDisturbance();
@@ -31,6 +33,10 @@ public:
 private:
     void fixCurrentBoxPositionUsingSprings();
     void connectBoxToFrame();
+
+    float _particleMass;
+    float _springsConstant;
+    float _springsAttenuation;
 
     ParticleSystem _particleSystem;
     ControlFrame _controlFrame;

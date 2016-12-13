@@ -1,4 +1,5 @@
 #include "SoftBox.hpp"
+#include "imgui.h"
 #include <cassert>
 #include <random>
 
@@ -6,7 +7,10 @@ namespace application
 {
 
 SoftBox::SoftBox():
-    _particleMatrixSize{4, 4, 4}
+    _particleMatrixSize{4, 4, 4},
+    _particleMass{1.0f},
+    _springsConstant{1.0f},
+    _springsAttenuation{1.0f}
 {
 }
 
@@ -84,10 +88,32 @@ int SoftBox::getParticleIndex(glm::ivec3 coordinate) const
     return particleIndex;
 }
 
-void SoftBox::update(double dt)
+void SoftBox::updateUserInterface()
 {
+    if (ImGui::CollapsingHeader("Soft-box settings"))
+    {
+        ImGui::SliderFloat(
+            "Particle mass (kg)",
+            &_particleMass,
+            0.001f,
+            1000.0f
+        );
+
+        ImGui::SliderFloat("Spring constant", &_springsConstant, 0.01f, 100.0f);
+        ImGui::SliderFloat("Attenuation", &_springsAttenuation, 0.f, 100.0f);
+    }
+
     _controlFrame.updateUserInterface();
 
+    _particleSystem.updateSoftBoxParticlesMass(_particleMass);
+    _particleSystem.updateSoftBoxConstraints(
+        _springsConstant,
+        _springsAttenuation
+    );
+}
+
+void SoftBox::update(double dt)
+{
     std::vector<ParticleState> staticParticles;
     auto frameTransform = _controlFrame.getModelMatrix();
     for (auto zsign = 0; zsign <= 1; ++zsign)

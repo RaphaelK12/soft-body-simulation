@@ -65,6 +65,13 @@ public:
 
     void applyRandomDisturbance();
 
+    void updateSoftBoxParticlesMass(double particleMass);
+
+    void updateSoftBoxConstraints(
+        double springConstant,
+        double springAttenuation
+    );
+
 protected:
     virtual std::vector<double> evaluateDerivative(
         const std::vector<double>& state,

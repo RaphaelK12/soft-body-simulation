@@ -240,4 +240,29 @@ void ParticleSystem::applyRandomDisturbance()
     }
 }
 
+void ParticleSystem::updateSoftBoxParticlesMass(double particleMass)
+{
+    for (auto& particle: _particleState)
+    {
+        particle.invMass = 1.0 / particleMass;
+    }
+}
+
+void ParticleSystem::updateSoftBoxConstraints(
+    double springConstant,
+    double springAttenuation
+)
+{
+    for (auto& constraint: _constraints)
+    {
+        if (constraint.a < 0 || constraint.b < 0)
+        {
+            continue;
+        }
+
+        constraint.springConstant = springConstant;
+        constraint.attenuationFactor = springAttenuation;
+    }
+}
+
 }
