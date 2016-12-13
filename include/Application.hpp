@@ -58,10 +58,13 @@ private:
     bool _enableGridPreview;
     bool _enableConstraintsPreview;
     bool _enableSoftBoxRendering;
+    bool _enableRoomRendering;
 
     std::shared_ptr<fw::TexturedPhongEffect> _phongEffect;
     std::shared_ptr<fw::UniversalPhongEffect> _universalPhongEffect;
 
+    glm::vec3 _roomSize;
+    std::shared_ptr<fw::Material> _roomMaterial;
     std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _cube;
 
     std::shared_ptr<fw::Material> _cubeOutlineMaterial;

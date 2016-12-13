@@ -14,10 +14,12 @@ namespace application
 {
 
 Application::Application():
+    _roomSize{10.0f, 5.0f, 10.0f},
     _updatePhysicsEnabled{false},
     _enableGridPreview{true},
     _enableConstraintsPreview{false},
     _enableSoftBoxRendering{true},
+    _enableRoomRendering{true},
     _enableCameraRotations{false},
     _cameraRotationSensitivity{0.2, 0.2}
 {
@@ -45,11 +47,14 @@ void Application::onCreate()
 
     _universalPhongEffect = std::make_shared<fw::UniversalPhongEffect>();
 
-    _cube = fw::createBox({1.0, 1.0, 1.0});
+    _cube = fw::createBox({1.0, 1.0, 1.0}, true);
     _grid = std::make_shared<fw::Grid>(
         glm::ivec2{32, 32},
         glm::vec2{0.5f, 0.5f}
     );
+
+    _roomMaterial = std::make_shared<fw::Material>();
+    _roomMaterial->setBaseAlbedoColor({0.8f, 0.3f, 0.3f, 1.0f});
 
     _testTexture = fw::loadTextureFromFile(
         fw::getFrameworkResourcePath("textures/checker-base.png")
@@ -98,8 +103,10 @@ void Application::onUpdate(
             ImGui::Checkbox("Grid preview", &_enableGridPreview);
             ImGui::Checkbox("Constraints preview", &_enableConstraintsPreview);
             ImGui::Checkbox("Soft-box preview", &_enableSoftBoxRendering);
+            ImGui::Checkbox("Room rendering", &_enableRoomRendering);
         }
     }
+
     ImGui::End();
 
     if (_updatePhysicsEnabled)
@@ -125,13 +132,13 @@ void Application::onRender()
         _phongEffect->end();
     }
 
-    auto lightDirection = glm::normalize(glm::vec3{-1.0f, 1.0f, 0.0f});
+    auto lightDirection = glm::normalize(glm::vec3{-1.0f, 1.0f, 2.0f});
+    _universalPhongEffect->setLightDirection(lightDirection);
 
     if (_enableConstraintsPreview)
     {
         for (const auto& chunk: _softBoxPreview->render(*_softBox.get()))
         {
-            _universalPhongEffect->setLightDirection(lightDirection);
             _universalPhongEffect->setMaterial(*chunk.getMaterial().get());
 
             _universalPhongEffect->begin();
@@ -155,12 +162,30 @@ void Application::onRender()
 
     if (_enableSoftBoxRendering)
     {
+        glFrontFace(GL_CCW);
         drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 0}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 3}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3-i, j, 3}; });
         drawSoftBoxSide([](int i, int j) { return glm::ivec3{0, i, j}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, i, j}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 0, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, 3-i, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3-i, 0, j}; });
         drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 3, j}; });
+    }
+
+    if (_enableRoomRendering)
+    {
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CW);
+        _universalPhongEffect->setMaterial(*_roomMaterial.get());
+        _universalPhongEffect->begin();
+        _universalPhongEffect->setProjectionMatrix(_projectionMatrix);
+        _universalPhongEffect->setViewMatrix(_camera.getViewMatrix());
+        _universalPhongEffect->setModelMatrix(
+            glm::scale(glm::mat4{}, _roomSize)
+        );
+        _cube->render();
+        _universalPhongEffect->end();
+
+        glFrontFace(GL_CCW);
     }
 
     ImGuiApplication::onRender();
