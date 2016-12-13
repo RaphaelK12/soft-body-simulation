@@ -75,6 +75,8 @@ private:
     std::shared_ptr<BezierPatchEffect> _bezierEffect;
     std::shared_ptr<BezierPatch> _bezierPatch;
 
+    std::shared_ptr<fw::Texture> _softbodyTexture;
+
     fw::OrbitingCamera _camera;
     glm::mat4 _projectionMatrix;
     bool _enableCameraRotations;

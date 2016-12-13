@@ -105,8 +105,9 @@ void main() {
 
   tePosition = viewPosition;
 
-  vec3 viewLightPosition = (viewMatrix * vec4(lightPosition, 1)).xyz;
-  teLightDirection = normalize(viewLightPosition - viewPosition);
+  vec3 viewLightDirection =
+    (transpose(inverse(viewMatrix)) * -vec4(-1, 1, 2, 0)).xyz;
+  teLightDirection = normalize(viewLightDirection);
 
   gl_Position = projectionMatrix * vec4(viewPosition, 1);
 }

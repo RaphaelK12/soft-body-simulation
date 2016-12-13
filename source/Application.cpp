@@ -10,6 +10,8 @@
 #include "fw/Resources.hpp"
 #include "fw/TextureUtils.hpp"
 
+#include "Config.hpp"
+
 namespace application
 {
 
@@ -37,6 +39,10 @@ void Application::onCreate()
     _cubeOutline = fw::createBoxOutline({1.0f, 1.0f, 1.0f});
     _cubeOutlineMaterial = std::make_shared<fw::Material>();
     _cubeOutlineMaterial->setEmissionColor({0.0f, 1.0f, 0.0f});
+
+    _softbodyTexture = std::make_shared<fw::Texture>(
+        std::string(cApplicationResourcesDir) + "textures/normal.png"
+    );
 
     restartSimulation();
 
@@ -160,17 +166,6 @@ void Application::onRender()
     _cubeOutline->render();
     _universalPhongEffect->end();
 
-    if (_enableSoftBoxRendering)
-    {
-        glFrontFace(GL_CCW);
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 0}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3-i, j, 3}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{0, i, j}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, 3-i, j}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3-i, 0, j}; });
-        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 3, j}; });
-    }
-
     if (_enableRoomRendering)
     {
         glEnable(GL_CULL_FACE);
@@ -186,6 +181,22 @@ void Application::onRender()
         _universalPhongEffect->end();
 
         glFrontFace(GL_CCW);
+    }
+
+    if (_enableSoftBoxRendering)
+    {
+        glDisable(GL_CULL_FACE);
+        //glDisable(GL_DEPTH_TEST);
+
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, j, 0}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3-i, j, 3}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{0, i, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3, 3-i, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{3-i, 0, j}; });
+        drawSoftBoxSide([](int i, int j) { return glm::ivec3{i, 3, j}; });
+
+        //glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
     }
 
     ImGuiApplication::onRender();
@@ -265,10 +276,18 @@ void Application::drawSoftBoxSide(
     }
 
     _bezierPatch->setControlPoints(controlPoints);
+
     _bezierEffect->begin();
+    _bezierEffect->setTessellationLevelBump(0);
+    _bezierEffect->setPatchU(0);
+    _bezierEffect->setPatchV(0);
+    _bezierEffect->setPatchesNumU(1);
+    _bezierEffect->setPatchesNumV(1);
+
     _bezierEffect->setModelMatrix({});
     _bezierEffect->setViewMatrix(_camera.getViewMatrix());
     _bezierEffect->setProjectionMatrix(_projectionMatrix);
+    _bezierEffect->setNormalTexture(_softbodyTexture->getTextureId());
     _bezierPatch->drawPatch();
     _bezierEffect->end();
 }
