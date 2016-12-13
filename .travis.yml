@@ -1,0 +1,12 @@
+language: cpp
+os:
+    - osx
+compiler:
+    - gcc-4.8
+    - clang
+script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make -j
+    - ./dependencies/framework/framework-test
