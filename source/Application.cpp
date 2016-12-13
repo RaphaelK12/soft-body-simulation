@@ -21,6 +21,7 @@ Application::Application():
     _enableCameraRotations{false},
     _cameraRotationSensitivity{0.2, 0.2}
 {
+    setWindowSize({1920, 1080});
 }
 
 Application::~Application()
