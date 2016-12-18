@@ -18,6 +18,7 @@
 
 #include "BezierPatch.hpp"
 #include "BezierPatchEffect.hpp"
+#include "BezierDistortionEffect.hpp"
 
 namespace application
 {
@@ -62,10 +63,12 @@ private:
 
     std::shared_ptr<fw::TexturedPhongEffect> _phongEffect;
     std::shared_ptr<fw::UniversalPhongEffect> _universalPhongEffect;
+    std::shared_ptr<BezierDistortionEffect> _bezierDistortionEffect;
 
     glm::vec3 _roomSize;
     std::shared_ptr<fw::Material> _roomMaterial;
     std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _cube;
+    std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _sphere;
 
     std::shared_ptr<fw::Material> _cubeOutlineMaterial;
     std::shared_ptr<fw::Mesh<fw::VertexColor>> _cubeOutline;

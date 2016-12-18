@@ -44,6 +44,8 @@ void Application::onCreate()
         std::string(cApplicationResourcesDir) + "textures/normal.png"
     );
 
+    _bezierDistortionEffect = std::make_shared<BezierDistortionEffect>();
+
     restartSimulation();
 
     _softBoxPreview = std::make_shared<SoftBoxPreview>();
@@ -54,6 +56,10 @@ void Application::onCreate()
     _universalPhongEffect = std::make_shared<fw::UniversalPhongEffect>();
 
     _cube = fw::createBox({1.0, 1.0, 1.0}, true);
+    _sphere = std::make_shared<fw::Mesh<fw::VertexNormalTexCoords>>(
+        fw::createSphere(0.5f, 64, 64)
+    );
+
     _grid = std::make_shared<fw::Grid>(
         glm::ivec2{32, 32},
         glm::vec2{0.5f, 0.5f}
@@ -197,6 +203,28 @@ void Application::onRender()
 
         //glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+    }
+
+    if (true)
+    {
+        auto particles = _softBox->getSoftBoxParticles();
+        std::vector<glm::vec3> controlPoints;
+        std::transform(
+            std::begin(particles),
+            std::end(particles),
+            std::back_inserter(controlPoints),
+            [](const ParticleState& particle) { return particle.position; }
+        );
+
+        _bezierDistortionEffect->setDistortionControlPoints(controlPoints);
+        _bezierDistortionEffect->begin();
+        _bezierDistortionEffect->setProjectionMatrix(_projectionMatrix);
+        _bezierDistortionEffect->setViewMatrix(_camera.getViewMatrix());
+        _bezierDistortionEffect->setModelMatrix(
+            glm::translate(glm::mat4{}, glm::vec3{0.5f, 0.5f, 0.5f})
+        );
+        _sphere->render();
+        _bezierDistortionEffect->end();
     }
 
     ImGuiApplication::onRender();

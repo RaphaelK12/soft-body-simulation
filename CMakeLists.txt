@@ -23,13 +23,14 @@ include_directories(
 
 add_library(${PROJECT_NAME_LIB}
     source/Application.cpp
+    source/BezierDistortionEffect.cpp
+    source/BezierPatch.cpp
+    source/BezierPatchEffect.cpp
     source/ControlFrame.cpp
     source/LineSetPreview.cpp
     source/ParticleState.cpp
     source/SoftBox.cpp
     source/SoftBoxPreview.cpp
-    source/BezierPatch.cpp
-    source/BezierPatchEffect.cpp
 )
 
 add_executable(${PROJECT_NAME}
