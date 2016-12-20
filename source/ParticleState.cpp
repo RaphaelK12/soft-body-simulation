@@ -57,19 +57,8 @@ glm::dvec3 SpringConstraint::getForce(const ParticleSystem& system) const
         ? glm::normalize(relation)
         : glm::dvec3{1.0, 0.0, 0.0};
 
-    auto relativeVelocityA = A.invMass * glm::dot(
-        relationDirection,
-        A.momentum
-    );
-
-    auto relativeVelocityB = B.invMass * glm::dot(
-        relationDirection,
-        B.momentum
-    );
-
-    auto springExtensionVelocity = relativeVelocityB - relativeVelocityA;
     auto springCurrentLength = glm::length(relation);
-    auto springForce = -springExtensionVelocity * attenuationFactor
+    auto springForce =
         - (springCurrentLength - springLength) * springConstant;
 
     return -relationDirection * springForce;
@@ -246,6 +235,13 @@ void ParticleSystem::updateParticles()
     for (auto& particle: _particleState)
     {
         particle.velocity = particle.invMass * particle.momentum;
+
+        // apply attenuation
+        if (glm::length(particle.velocity) > 0.0001)
+        {
+            particle.netForce +=
+                -_movementAttenuationFactor * glm::normalize(particle.velocity);
+        }
     }
 }
 
