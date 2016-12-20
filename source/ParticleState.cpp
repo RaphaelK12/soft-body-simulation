@@ -235,13 +235,7 @@ void ParticleSystem::updateParticles()
     for (auto& particle: _particleState)
     {
         particle.velocity = particle.invMass * particle.momentum;
-
-        // apply attenuation
-        if (glm::length(particle.velocity) > 0.0001)
-        {
-            particle.netForce +=
-                -_movementAttenuationFactor * glm::normalize(particle.velocity);
-        }
+        particle.netForce += -_movementAttenuationFactor * particle.velocity;
     }
 }
 
