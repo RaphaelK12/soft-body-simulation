@@ -7,6 +7,7 @@ set(PROJECT_NAME_LIB ${PROJECT_NAME}-lib)
 set(DEPENDENCIES_DIR dependencies/)
 
 add_subdirectory(${DEPENDENCIES_DIR}/framework)
+add_subdirectory(${DEPENDENCIES_DIR}/assimp)
 
 set(APPLICATION_RESOURCES_DIR ${PROJECT_SOURCE_DIR}/assets CACHE PATH "")
 
@@ -19,6 +20,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/configuration
     ${FRAMEWORK_INCLUDE_DIRS}
+    ${DEPENDENCIES_DIR}/assimp/include
 )
 
 add_library(${PROJECT_NAME_LIB}
@@ -40,6 +42,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     ${PROJECT_NAME_LIB}
     ${FRAMEWORK_LIBRARIES}
+    assimp
 )
 
 set(PROJECT_COMPILE_FEATURES

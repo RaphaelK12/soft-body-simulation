@@ -5,6 +5,11 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
 
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/postprocess.h"
+#include "easylogging++.h"
+
 #include "fw/Common.hpp"
 #include "fw/DebugShapes.hpp"
 #include "fw/Resources.hpp"
@@ -18,10 +23,11 @@ namespace application
 Application::Application():
     _roomSize{10.0f, 5.0f, 10.0f},
     _updatePhysicsEnabled{false},
-    _enableGridPreview{true},
+    _enableGridPreview{false},
     _enableConstraintsPreview{false},
-    _enableSoftBoxRendering{true},
+    _enableSoftBoxRendering{false},
     _enableRoomRendering{true},
+    _enableObjectRendering{true},
     _enableCameraRotations{false},
     _cameraRotationSensitivity{0.2, 0.2}
 {
@@ -81,6 +87,8 @@ void Application::onCreate()
     _bezierPatch->createFlatGrid(3.0f, 3.0f);
     _bezierEffect = std::make_shared<BezierPatchEffect>();
     _bezierEffect->initialize("bezierPatch");
+
+    loadSoftModel();
 }
 
 void Application::onDestroy()
@@ -115,6 +123,7 @@ void Application::onUpdate(
             ImGui::Checkbox("Grid preview", &_enableGridPreview);
             ImGui::Checkbox("Constraints preview", &_enableConstraintsPreview);
             ImGui::Checkbox("Soft-box preview", &_enableSoftBoxRendering);
+            ImGui::Checkbox("Mesh rendering", &_enableObjectRendering);
             ImGui::Checkbox("Room rendering", &_enableRoomRendering);
         }
     }
@@ -205,7 +214,7 @@ void Application::onRender()
         glEnable(GL_CULL_FACE);
     }
 
-    if (true)
+    if (_enableObjectRendering)
     {
         auto particles = _softBox->getSoftBoxParticles();
         std::vector<glm::vec3> controlPoints;
@@ -223,7 +232,7 @@ void Application::onRender()
         _bezierDistortionEffect->setModelMatrix(
             glm::translate(glm::mat4{}, glm::vec3{0.5f, 0.5f, 0.5f})
         );
-        _sphere->render();
+        _softModel->render();
         _bezierDistortionEffect->end();
     }
 
@@ -327,6 +336,69 @@ void Application::restartSimulation()
         {-1.0, -1.0, -1.0},
         {+1.0, +1.0, +1.0}
     });
+}
+
+void Application::loadSoftModel()
+{
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(
+        std::string(cApplicationResourcesDir) + "/models/bunny.obj",
+        aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs
+    );
+
+    if (!scene
+        || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE
+        || !scene->mRootNode)
+    {
+        LOG(ERROR)
+            << "Assimp cannot load the scene. "
+            << importer.GetErrorString();
+        return;
+    }
+
+    if (scene->mNumMeshes == 0)
+    {
+        LOG(ERROR) << "No meshes found in file.";
+        return;
+    }
+
+    aiMesh *mesh = scene->mMeshes[0];
+
+    std::vector<fw::VertexNormalTexCoords> vertices;
+    std::vector<GLuint> indices;
+
+    for (auto i = 0; i < mesh->mNumVertices; ++i)
+    {
+        fw::VertexNormalTexCoords vertex;
+
+        vertex.position = glm::vec3(
+            mesh->mVertices[i].x,
+            mesh->mVertices[i].y,
+            mesh->mVertices[i].z
+        );
+
+        vertex.normal = glm::vec3(
+            mesh->mNormals[i].x,
+            mesh->mNormals[i].y,
+            mesh->mNormals[i].z
+        );
+
+        vertices.push_back(vertex);
+    }
+
+    for (auto i = 0; i < mesh->mNumFaces; ++i)
+    {
+        aiFace face = mesh->mFaces[i];
+        for (auto j = 0; j < face.mNumIndices; ++j)
+        {
+            indices.push_back(face.mIndices[j]);
+        }
+    }
+
+    _softModel = std::make_shared<fw::Mesh<fw::VertexNormalTexCoords>>(
+        vertices,
+        indices
+    );
 }
 
 }

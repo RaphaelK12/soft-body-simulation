@@ -1,3 +1,6 @@
 [submodule "dependencies/framework"]
 	path = dependencies/framework
 	url = git@github.com:sienkiewiczkm/framework.git
+[submodule "dependencies/assimp"]
+	path = dependencies/assimp
+	url = https://github.com/assimp/assimp

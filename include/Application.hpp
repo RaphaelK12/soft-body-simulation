@@ -51,6 +51,8 @@ protected:
 
     void restartSimulation();
 
+    void loadSoftModel();
+
 private:
     bool _updatePhysicsEnabled;
     std::shared_ptr<SoftBox> _softBox;
@@ -60,6 +62,7 @@ private:
     bool _enableConstraintsPreview;
     bool _enableSoftBoxRendering;
     bool _enableRoomRendering;
+    bool _enableObjectRendering;
 
     std::shared_ptr<fw::TexturedPhongEffect> _phongEffect;
     std::shared_ptr<fw::UniversalPhongEffect> _universalPhongEffect;
@@ -69,6 +72,7 @@ private:
     std::shared_ptr<fw::Material> _roomMaterial;
     std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _cube;
     std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _sphere;
+    std::shared_ptr<fw::Mesh<fw::VertexNormalTexCoords>> _softModel;
 
     std::shared_ptr<fw::Material> _cubeOutlineMaterial;
     std::shared_ptr<fw::Mesh<fw::VertexColor>> _cubeOutline;
