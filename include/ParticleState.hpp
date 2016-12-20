@@ -77,6 +77,11 @@ public:
         double springAttenuation
     );
 
+    void updateEnvironmentConstant(
+        double movementAttenuationFactor,
+        double elasticCollisionFactor
+    );
+
 protected:
     virtual std::vector<double> evaluateDerivative(
         const std::vector<double>& state,
@@ -98,6 +103,9 @@ private:
     std::vector<SpringConstraint> _constraints;
 
     glm::dvec3 _roomSize;
+
+    double _elasticCollisionFactor;
+    double _movementAttenuationFactor;
 };
 
 }

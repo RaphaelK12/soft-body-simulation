@@ -34,6 +34,8 @@ private:
     void fixCurrentBoxPositionUsingSprings();
     void connectBoxToFrame();
 
+    float _elasticCollisionFactor;
+    float _movementAttenuationFactor;
     float _particleMass;
     float _springsConstant;
     float _springsAttenuation;

@@ -322,6 +322,15 @@ void ParticleSystem::updateFrameConstraints(
     }
 }
 
+void ParticleSystem::updateEnvironmentConstant(
+    double movementAttenuationFactor,
+    double elasticCollisionFactor
+)
+{
+    _movementAttenuationFactor = movementAttenuationFactor;
+    _elasticCollisionFactor = elasticCollisionFactor;
+}
+
 bool ParticleSystem::checkInterpenetration()
 {
     auto minPosition = -0.5 * _roomSize;
@@ -347,6 +356,7 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
     auto epsilon = 10e-5;
     for (auto& particle: _particleState)
     {
+        bool applyPentalty = false;
         if (particle.position.x < -_roomSize.x / 2 + epsilon
             && particle.momentum.x < -epsilon)
         {
@@ -354,6 +364,7 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
                 particle.momentum,
                 {1.0, 0.0, 0.0}
             );
+            applyPentalty = true;
         } else if (particle.position.x > _roomSize.x / 2 - epsilon
             && particle.momentum.x > epsilon)
         {
@@ -361,6 +372,7 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
                 particle.momentum,
                 {-1.0, 0.0, 0.0}
             );
+            applyPentalty = true;
         }
         if (particle.position.y < -_roomSize.y / 2 + epsilon
             && particle.momentum.y < -epsilon)
@@ -369,6 +381,7 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
                 particle.momentum,
                 {0.0, 1.0, 0.0}
             );
+            applyPentalty = true;
         } else if (particle.position.y > _roomSize.y / 2 - epsilon
             && particle.momentum.y > epsilon)
         {
@@ -376,6 +389,7 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
                 particle.momentum,
                 {0.0, -1.0, 0.0}
             );
+            applyPentalty = true;
         }
         if (particle.position.z < -_roomSize.z / 2 + epsilon
             && particle.momentum.z < -epsilon)
@@ -384,6 +398,7 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
                 particle.momentum,
                 {0.0, 0.0, 1.0}
             );
+            applyPentalty = true;
         } else if (particle.position.z > _roomSize.z / 2 - epsilon
             && particle.momentum.z > epsilon)
         {
@@ -391,6 +406,12 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
                 particle.momentum,
                 {0.0, 0.0, -1.0}
             );
+            applyPentalty = true;
+        }
+
+        if (applyPentalty)
+        {
+            particle.momentum = _elasticCollisionFactor * particle.momentum;
         }
     }
 }

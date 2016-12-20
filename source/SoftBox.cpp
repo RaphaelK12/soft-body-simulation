@@ -10,7 +10,9 @@ SoftBox::SoftBox():
     _particleMatrixSize{4, 4, 4},
     _particleMass{0.1f},
     _springsConstant{5.0f},
-    _springsAttenuation{1.0f}
+    _springsAttenuation{1.0f},
+    _elasticCollisionFactor{1.0f},
+    _movementAttenuationFactor{1.0f}
 {
 }
 
@@ -90,6 +92,23 @@ int SoftBox::getParticleIndex(glm::ivec3 coordinate) const
 
 void SoftBox::updateUserInterface()
 {
+    if (ImGui::CollapsingHeader("Environment"))
+    {
+        ImGui::SliderFloat(
+            "Movement attenuation",
+            &_movementAttenuationFactor,
+            0.f,
+            100.0f
+        );
+
+        ImGui::SliderFloat(
+            "Elastic collision factor",
+            &_elasticCollisionFactor,
+            0.0f,
+            1.0f
+        );
+    }
+
     if (ImGui::CollapsingHeader("Soft-box settings"))
     {
         ImGui::SliderFloat(
@@ -114,6 +133,11 @@ void SoftBox::updateUserInterface()
     _particleSystem.updateFrameConstraints(
         _controlFrame.getSpringConstant(),
         _controlFrame.getSpringAttenuation()
+    );
+
+    _particleSystem.updateEnvironmentConstant(
+        _movementAttenuationFactor,
+        _elasticCollisionFactor
     );
 }
 
