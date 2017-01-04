@@ -67,7 +67,14 @@ vec3 EvaluateBernsteinDistortion(vec3 p)
 void main()
 {
     vec3 modelPosition = (model* vec4(position, 1)).xyz;
+    vec3 modelNormal = (transpose(inverse(model)) * vec4(normal, 0)).xyz;
+
     vec3 distortedPosition = EvaluateBernsteinDistortion(modelPosition);
+    vec3 distortedMovedPosition = EvaluateBernsteinDistortion(
+        modelPosition + 0.05 * modelNormal
+    );
+
+    vsOut.Normal = normalize(distortedMovedPosition - distortedPosition);
+
     gl_Position = projection * view * vec4(distortedPosition, 1.0);
-    vsOut.Normal = (transpose(inverse(model)) * vec4(normal, 0)).xyz;
 }
