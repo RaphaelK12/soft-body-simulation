@@ -129,7 +129,7 @@ double ParticleSystem::singleStep(double maxDt)
     if (interpenetration)
     {
         const double cTimeTolerance = 10e-3;
-        auto stepLowerLimit = 0.0;
+        auto stepLowerLimit = 0.001;
         auto stepUpperLimit = maxDt;
         std::vector<double> lastPhysicsState;
 
@@ -148,7 +148,7 @@ double ParticleSystem::singleStep(double maxDt)
             }
         }
 
-        auto chosenTouchTime = (stepUpperLimit + stepLowerLimit) / 2.0;
+        auto chosenTouchTime = stepLowerLimit;
         auto touchPhysicsState = step(physicsState, 0.0, chosenTouchTime);
 
         applyPhysicsState(touchPhysicsState);
@@ -347,55 +347,55 @@ void ParticleSystem::applyImpulsesToCollidingContacts()
     for (auto& particle: _particleState)
     {
         bool applyPentalty = false;
-        if (particle.position.x < -_roomSize.x / 2 + epsilon
-            && particle.momentum.x < -epsilon)
+        if (particle.position.x < -_roomSize.x / 2 + epsilon)
         {
-            particle.momentum = glm::reflect(
-                particle.momentum,
-                {1.0, 0.0, 0.0}
-            );
+            if (particle.momentum.x < 0.0f)
+            {
+                particle.momentum.x = -particle.momentum.x;
+            }
             applyPentalty = true;
-        } else if (particle.position.x > _roomSize.x / 2 - epsilon
-            && particle.momentum.x > epsilon)
+        } else if (particle.position.x > _roomSize.x / 2 - epsilon)
         {
-            particle.momentum = glm::reflect(
-                particle.momentum,
-                {-1.0, 0.0, 0.0}
-            );
+            if (particle.momentum.x > 0.0f)
+            {
+                particle.momentum.x = -particle.momentum.x;
+            }
             applyPentalty = true;
         }
-        if (particle.position.y < -_roomSize.y / 2 + epsilon
-            && particle.momentum.y < -epsilon)
+
+        if (particle.position.y < -_roomSize.y / 2 + epsilon)
         {
-            particle.momentum = glm::reflect(
-                particle.momentum,
-                {0.0, 1.0, 0.0}
-            );
+            if (particle.momentum.y < 0.0f)
+            {
+                particle.momentum.y = -particle.momentum.y;
+            }
+
             applyPentalty = true;
-        } else if (particle.position.y > _roomSize.y / 2 - epsilon
-            && particle.momentum.y > epsilon)
+        } else if (particle.position.y > _roomSize.y / 2 - epsilon)
         {
-            particle.momentum = glm::reflect(
-                particle.momentum,
-                {0.0, -1.0, 0.0}
-            );
+            if (particle.momentum.y > 0.0f)
+            {
+                particle.momentum.y = -particle.momentum.y;
+            }
+
             applyPentalty = true;
         }
-        if (particle.position.z < -_roomSize.z / 2 + epsilon
-            && particle.momentum.z < -epsilon)
+
+        if (particle.position.z < -_roomSize.z / 2 + epsilon)
         {
-            particle.momentum = glm::reflect(
-                particle.momentum,
-                {0.0, 0.0, 1.0}
-            );
+            if (particle.momentum.z < 0.0f)
+            {
+                particle.momentum.z = -particle.momentum.z;
+            }
+
             applyPentalty = true;
-        } else if (particle.position.z > _roomSize.z / 2 - epsilon
-            && particle.momentum.z > epsilon)
+        } else if (particle.position.z > _roomSize.z / 2 - epsilon)
         {
-            particle.momentum = glm::reflect(
-                particle.momentum,
-                {0.0, 0.0, -1.0}
-            );
+            if (particle.momentum.z > 0.0f)
+            {
+                particle.momentum.z = -particle.momentum.z;
+            }
+
             applyPentalty = true;
         }
 
